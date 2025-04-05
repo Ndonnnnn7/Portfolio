@@ -27,18 +27,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Mobile menu toggle with smoother animation
   burger.addEventListener("click", function () {
+    // Toggle nav with slide animation
     nav.classList.toggle("active");
-    burger.classList.toggle("toggle");
 
+    // Animate links with cascade effect
     navLinks.forEach((link, index) => {
-      link.style.animation = ""; // Reset dulu
-
-      if (nav.classList.contains("active")) {
+      if (link.style.animation) {
+        link.style.animation = "";
+      } else {
         link.style.animation = `navLinkFade 0.5s ease forwards ${
           index / 7 + 0.3
         }s`;
       }
     });
+
+    // Burger icon animation
+    burger.classList.toggle("toggle");
   });
 
   // Smooth scrolling for all internal links
