@@ -27,37 +27,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Mobile menu toggle with smoother animation
   burger.addEventListener("click", function () {
-    // Toggle nav with slide animation
     nav.classList.toggle("active");
+    burger.classList.toggle("toggle");
 
-    // Animate links with cascade effect
     navLinks.forEach((link, index) => {
-      if (link.style.animation) {
-        link.style.animation = "";
-      } else {
+      link.style.animation = ""; // Reset dulu
+
+      if (nav.classList.contains("active")) {
         link.style.animation = `navLinkFade 0.5s ease forwards ${
           index / 7 + 0.3
         }s`;
       }
     });
-
-    // Burger icon animation
-    burger.classList.toggle("toggle");
   });
 
   // Smooth scrolling for all internal links
-  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  document.querySelectorAll('.nav-links li a[href^="#"]').forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       e.preventDefault();
 
-      // Close mobile menu if open
+      // Scroll to target
+      const target = document.querySelector(this.getAttribute("href"));
+      if (target) {
+        target.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
+      // Close menu and remove animations
       nav.classList.remove("active");
       burger.classList.remove("toggle");
-
-      // Smooth scroll to target
-      document.querySelector(this.getAttribute("href")).scrollIntoView({
-        behavior: "smooth",
-        block: "start",
+      navLinks.forEach((link) => {
+        link.style.animation = ""; // Reset animasi
       });
     });
   });
@@ -873,4 +875,114 @@ document.addEventListener("DOMContentLoaded", function () {
     `;
     document.head.appendChild(glowStyle);
   }
+  // Add this to your existing JavaScript file after the DOMContentLoaded event
+
+  // Create and append canvas for animated background
+  const canvas = document.createElement("canvas");
+  canvas.id = "background-animation";
+  document.body.insertBefore(canvas, document.body.firstChild);
+
+  // Set up canvas and context
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  // Particle class
+  class Particle {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * canvas.height;
+      this.size = Math.random() * 3 + 1;
+      this.speedX = Math.random() * 1 - 0.5;
+      this.speedY = Math.random() * 1 - 0.5;
+      this.color = `rgba(109, 93, 252, ${Math.random() * 0.5})`;
+    }
+
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+
+      // Boundary check
+      if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+      if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+    }
+
+    draw() {
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Initialize particles
+  const particles = [];
+  const particleCount = 100;
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  // Connect particles with lines if they're close enough
+  function connectParticles() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < 150) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(109, 93, 252, ${0.1 - distance / 1500})`;
+          ctx.lineWidth = 0.5;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // Animation loop
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach((particle) => {
+      particle.update();
+      particle.draw();
+    });
+
+    connectParticles();
+    requestAnimationFrame(animate);
+  }
+
+  // Handle resize
+  window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  // Start animation
+  animate();
+
+  window.addEventListener("mousemove", (event) => {
+    mouse.x = event.x;
+    mouse.y = event.y;
+
+    // Create ripple effect
+    for (let i = 0; i < 3; i++) {
+      const particle = new Particle();
+      particle.x = mouse.x;
+      particle.y = mouse.y;
+      particle.speedX = Math.random() * 2 - 1;
+      particle.speedY = Math.random() * 2 - 1;
+      particle.size = Math.random() * 4 + 2;
+      particles.push(particle);
+
+      // Limit particles
+      if (particles.length > 200) {
+        particles.splice(0, 3);
+      }
+    }
+  });
 });
